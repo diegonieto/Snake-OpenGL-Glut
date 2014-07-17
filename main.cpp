@@ -22,11 +22,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
+#include <string.h>
+#include <sstream>
+#include <iostream>
 
 // Datos de la serpiente //
 int activos = 10;     // numero de cuadrados activos
 int puntuacion = 0;   // calificacion del jugador actual
 int anchoani = 1;
+int velocidad = 100000;
+int level = 1;
 class anilla {        // Tipo anilla de la serpiente
    public:
    int x;
@@ -42,6 +48,8 @@ int vel = 1;
 int Ancho = 80;
 int Alto = 80;
 
+char *info = "Level 1";
+
 void DibujaEscena()
 {
    // Pone el color de fondo a azul
@@ -54,6 +62,13 @@ void DibujaEscena()
    for (int i=0; i<activos; i++) {
        glRectf (serpiente[i].x,serpiente[i].y,serpiente[i].x+anchoani,serpiente[i].y+anchoani);
    }
+   // Mostrar info
+   /*
+   glRasterPos2i(10,70);
+   for(int i=0; i<strlen(info); i++) {
+       glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, info[i]);
+   }
+   */
    // Dibujar comida
    glColor3f(1.0, 1.0, 0.0);
    glRectf (comida.x,comida.y,comida.x+1,comida.y+1);
@@ -61,11 +76,10 @@ void DibujaEscena()
    glutSwapBuffers();
 }
 
-
-
-
-void AumentarAnillas() {
-   activos+=10;
+void AumentarNivel() {
+   activos+=5;
+   velocidad = velocidad < 10000 ? 5000 : velocidad-8000;
+   level++;
 }
 
 void CambiarDir(int key,int x, int y) {
@@ -97,8 +111,6 @@ void CambiarDir(int key,int x, int y) {
     };
 }
 
-
-
 void generacomida() {
    bool comprobado = false;
    while (!comprobado) {
@@ -114,9 +126,8 @@ void generacomida() {
    }
 }
 
-
 void Retrasar() {
-   for (int i=0; i<10000000; i++);
+    usleep(velocidad);
 }
 
 void MueveAnillas()
@@ -153,20 +164,19 @@ void MueveAnillas()
     for (int i=0; i<activos; i++) {
          if(comida.x == serpiente[i].x && comida.y == serpiente[i].y) {
              i = activos;
-             AumentarAnillas();
+             AumentarNivel();
              generacomida();
          }
          if (serpiente[0].x == serpiente[i+1].x && serpiente[0].y == serpiente[i+1].y) {
              serpiente[0].x = 10;
              serpiente[0].y = 10;
              activos = 10;
+             velocidad = 100000;
              break;
          }
     }
     glutPostRedisplay();
 }
-
-
 
 void EscalaVentana(GLsizei w, GLsizei h)
 {
